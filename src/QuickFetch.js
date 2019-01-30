@@ -1,7 +1,7 @@
 import qs from 'qs';
 import {
   mergeWith, omit, keys, map, filter, assign, findIndex
-} from 'lodash';
+} from 'lodash-es';
 
 function _cloneObject(target) {
   return target && typeof target.clone === 'function'
