@@ -5,11 +5,13 @@
   "main": "dist/QuickFetch.min.js",
   "scripts": {
     "test": "jest",
+    "doc": "jsdoc2md src/QuickFetch.js --template README.hbs > README.md",
     "build": "parcel build src/QuickFetch.js -d dist/ --out-file QuickFetch.min.js --no-source-maps --experimental-scope-hoisting"
   },
   "pre-commit": [
     "test",
-    "build"
+    "build",
+    "doc"
   ],
   "keywords": [
     "fetch"
@@ -27,6 +29,7 @@
     "babel-jest": "^24.0.0",
     "jest": "^24.0.0",
     "jest-fetch-mock": "^2.1.0",
+    "jsdoc-to-markdown": "^4.0.1",
     "parcel-bundler": "^1.11.0",
     "pre-commit": "^1.2.2"
   }
