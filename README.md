@@ -4,7 +4,7 @@
 
 ## 1. How to install
 ```
-npm i QuickFetch --save
+npm i quickfetch --save
 ```
 
 ## 2. How to use
