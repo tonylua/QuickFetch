@@ -1,0 +1,22 @@
+{
+  "name": "quickfetch",
+  "version": "0.0.1",
+  "description": "a fetch wrapper like axios",
+  "main": "QuickFetch.js",
+  "scripts": {
+    "test": "npm test"
+  },
+  "keywords": [
+    "fetch"
+  ],
+  "author": "tonylua@sina.com",
+  "license": "ISC",
+  "dependencies": {
+    "file-saver": "^2.0.0",
+    "lodash": "^4.17.11",
+    "qs": "^6.6.0"
+  },
+  "devDependencies": {
+    "jest-fetch-mock": "^2.1.0"
+  }
+}
