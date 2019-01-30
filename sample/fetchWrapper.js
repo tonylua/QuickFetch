@@ -1,6 +1,6 @@
 import { mergeWith } from 'lodash';
 import saveAs from 'file-saver';
-import QuickFetch from './QuickFetch';
+import QuickFetch from '../src/QuickFetch';
 
 const isBadRequest = status => status >= 300;
 
