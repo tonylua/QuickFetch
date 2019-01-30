@@ -8,7 +8,8 @@
     "build": "parcel build src/QuickFetch.js -d dist/ --out-file QuickFetch.min.js --no-source-maps --experimental-scope-hoisting"
   },
   "pre-commit": [
-    "test"
+    "test",
+    "build"
   ],
   "keywords": [
     "fetch"
