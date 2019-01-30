@@ -1,5 +1,5 @@
 import fetch from 'jest-fetch-mock';
-import QuickFetch from './QuickFetch';
+import QuickFetch from '../src/QuickFetch';
 
 const _originFetch = global.fetch;
 
