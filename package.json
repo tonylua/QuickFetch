@@ -9,8 +9,7 @@
     "build": "parcel build src/QuickFetch.js -d dist/ --out-file QuickFetch.min.js --no-source-maps --no-cache"
   },
   "pre-commit": [
-    "test",
-    "build"
+    "test"
   ],
   "keywords": [
     "fetch"
