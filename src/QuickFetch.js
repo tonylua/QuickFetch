@@ -1,7 +1,15 @@
 import qs from 'qs';
-import {
-  mergeWith, omit, keys, map, filter, assign, findIndex
-} from 'lodash-es';
+import mergeWith from 'lodash-es/mergeWith';
+import omit from 'lodash-es/omit';
+import keys from 'lodash-es/keys';
+import map from 'lodash-es/map';
+import filter from 'lodash-es/filter';
+import assign from 'lodash-es/assign';
+import findIndex from 'lodash-es/findIndex';
+// 这种写法无法正确 tree shaking 并会造成引用错误
+// import {
+//   mergeWith, omit, keys, map, filter, assign, findIndex
+// } from 'lodash-es';
 
 function _cloneObject(target) {
   return target && typeof target.clone === 'function'
