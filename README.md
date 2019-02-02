@@ -36,6 +36,7 @@ a fetch-based HTTP request tool
 | Param | Type | Default | Description |
 | --- | --- | --- | --- |
 | [option] | <code>Object</code> \| <code>null</code> |  | an optional object for Request API |
+| [option.baseURL] | <code>string</code> |  | an optional url prefix |
 | [option.timeout] | <code>string</code> | <code>30000</code> | an optional timeout |
 | [option.catchError] | <code>Boolean</code> | <code>true</code> | optional,   if true then just parse error in middleware, otherwise throw it to endpoint |
 
@@ -66,6 +67,7 @@ make a GET fetch
 | url | <code>string</code> |  |  |
 | [params] | <code>Object</code> \| <code>null</code> |  | an optional params object |
 | [option] | <code>Object</code> \| <code>null</code> |  | an optional object for Request API |
+| [option.baseURL] | <code>string</code> |  | an optional url prefix |
 | [option.timeout] | <code>string</code> | <code>30000</code> | an optional timeout |
 | [option.catchError] | <code>Boolean</code> | <code>true</code> | optional,   if true then just parse error in middleware, otherwise throw it to endpoint |
 
@@ -82,6 +84,7 @@ make a POST fetch
 | url | <code>string</code> |  |  |
 | [params] | <code>Object</code> \| <code>null</code> |  | an optional params object |
 | [option] | <code>Object</code> \| <code>null</code> |  | an optional object for Request API |
+| [option.baseURL] | <code>string</code> |  | an optional url prefix |
 | [option.timeout] | <code>string</code> | <code>30000</code> | an optional timeout |
 | [option.catchError] | <code>Boolean</code> | <code>true</code> | optional,   if true then just parse error in middleware, otherwise throw it to endpoint |
 
@@ -98,6 +101,7 @@ make a DELETE fetch
 | url | <code>string</code> |  |  |
 | [params] | <code>Object</code> \| <code>null</code> |  | an optional params object |
 | [option] | <code>Object</code> \| <code>null</code> |  | an optional object for Request API |
+| [option.baseURL] | <code>string</code> |  | an optional url prefix |
 | [option.timeout] | <code>string</code> | <code>30000</code> | an optional timeout |
 | [option.catchError] | <code>Boolean</code> | <code>true</code> | optional,   if true then just parse error in middleware, otherwise throw it to endpoint |
 
@@ -114,6 +118,7 @@ make a PUT fetch
 | url | <code>string</code> |  |  |
 | [params] | <code>Object</code> \| <code>null</code> |  | an optional params object |
 | [option] | <code>Object</code> \| <code>null</code> |  | an optional object for Request API |
+| [option.baseURL] | <code>string</code> |  | an optional url prefix |
 | [option.timeout] | <code>string</code> | <code>30000</code> | an optional timeout |
 | [option.catchError] | <code>Boolean</code> | <code>true</code> | optional,   if true then just parse error in middleware, otherwise throw it to endpoint |
 
@@ -130,6 +135,7 @@ make a PATCH fetch
 | url | <code>string</code> |  |  |
 | [params] | <code>Object</code> \| <code>null</code> |  | an optional params object |
 | [option] | <code>Object</code> \| <code>null</code> |  | an optional object for Request API |
+| [option.baseURL] | <code>string</code> |  | an optional url prefix |
 | [option.timeout] | <code>string</code> | <code>30000</code> | an optional timeout |
 | [option.catchError] | <code>Boolean</code> | <code>true</code> | optional,   if true then just parse error in middleware, otherwise throw it to endpoint |
 

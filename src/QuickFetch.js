@@ -4,11 +4,11 @@ import omit from 'lodash-es/omit';
 import keys from 'lodash-es/keys';
 import map from 'lodash-es/map';
 import filter from 'lodash-es/filter';
-import assign from 'lodash-es/assign';
+import trim from 'lodash-es/trim';
 import findIndex from 'lodash-es/findIndex';
 // 这种写法无法正确 tree shaking 并会造成引用错误
 // import {
-//   mergeWith, omit, keys, map, filter, assign, findIndex
+//   mergeWith, omit, keys, map, filter, findIndex
 // } from 'lodash-es';
 
 function _cloneObject(target) {
@@ -28,6 +28,7 @@ function _isValidUseId(fetchId) {
  * @description a fetch-based HTTP request tool
  * @class
  * @param {Object|null} [option] - an optional object for Request API
+ * @param {string} [option.baseURL] - an optional url prefix
  * @param {string} [option.timeout=30000] - an optional timeout
  * @param {Boolean} [option.catchError=true] - optional, 
  *  if true then just parse error in middleware, otherwise throw it to endpoint
@@ -271,6 +272,7 @@ QuickFetch.prototype = {
           'Content-Type': 'application/json'
         },
         timeout: 30000,
+        baseURL: '',
         catchError: true
       }, this._globalOption, option);
 
@@ -300,6 +302,12 @@ QuickFetch.prototype = {
         }
       }
 
+      // url prefix
+      if (option.baseURL) {
+        url = `${option.baseURL}/${url}`.replace(/\/+/g, '/');
+      }
+
+      // the origin fetch method
       let _fetch = this._originFetch;
 
       // timeout support
@@ -321,7 +329,7 @@ QuickFetch.prototype = {
         })();
       }
 
-      const req = new Request(url, option);
+      const req = new Request(trim(url), option);
       // console.log(option)
       return this._parseRequestMiddlewares(req, option.fetchId).then(
         request => _fetch(request.clone()).then(
@@ -346,6 +354,7 @@ QuickFetch.prototype = {
    * @param {string} url
    * @param {Object|null} [params] - an optional params object
    * @param {Object|null} [option] - an optional object for Request API
+   * @param {string} [option.baseURL] - an optional url prefix
    * @param {string} [option.timeout=30000] - an optional timeout
    * @param {Boolean} [option.catchError=true] - optional, 
    *  if true then just parse error in middleware, otherwise throw it to endpoint
@@ -360,6 +369,7 @@ QuickFetch.prototype = {
    * @param {string} url
    * @param {Object|null} [params] - an optional params object
    * @param {Object|null} [option] - an optional object for Request API
+   * @param {string} [option.baseURL] - an optional url prefix
    * @param {string} [option.timeout=30000] - an optional timeout
    * @param {Boolean} [option.catchError=true] - optional, 
    *  if true then just parse error in middleware, otherwise throw it to endpoint
@@ -374,6 +384,7 @@ QuickFetch.prototype = {
    * @param {string} url
    * @param {Object|null} [params] - an optional params object
    * @param {Object|null} [option] - an optional object for Request API
+   * @param {string} [option.baseURL] - an optional url prefix
    * @param {string} [option.timeout=30000] - an optional timeout
    * @param {Boolean} [option.catchError=true] - optional, 
    *  if true then just parse error in middleware, otherwise throw it to endpoint
@@ -388,6 +399,7 @@ QuickFetch.prototype = {
    * @param {string} url
    * @param {Object|null} [params] - an optional params object
    * @param {Object|null} [option] - an optional object for Request API
+   * @param {string} [option.baseURL] - an optional url prefix
    * @param {string} [option.timeout=30000] - an optional timeout
    * @param {Boolean} [option.catchError=true] - optional, 
    *  if true then just parse error in middleware, otherwise throw it to endpoint
@@ -402,6 +414,7 @@ QuickFetch.prototype = {
    * @param {string} url
    * @param {Object|null} [params] - an optional params object
    * @param {Object|null} [option] - an optional object for Request API
+   * @param {string} [option.baseURL] - an optional url prefix
    * @param {string} [option.timeout=30000] - an optional timeout
    * @param {Boolean} [option.catchError=true] - optional, 
    *  if true then just parse error in middleware, otherwise throw it to endpoint

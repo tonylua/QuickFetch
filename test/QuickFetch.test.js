@@ -55,6 +55,18 @@ describe('test QuickFetch.js', () => {
     );
   });
 
+  it('应该正确处理 url 前缀', (done) => {
+    qFetch = new QuickFetch({
+      baseURL: '/ajax-api'
+    });
+    qFetch.use(QuickFetch.REQUEST, (req, next) => {
+      expect(req.url).toEqual('/ajax-api/sample/info2');
+      done();
+      next(req);
+    });
+    qFetch.get('/sample/info2');
+  });
+
   it('超时应该报错', (done) => {
     fetch.mockResponseOnce(
       () => new Promise(resolve => setTimeout(() => resolve({ body: 'ok' }), 100))
