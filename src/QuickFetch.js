@@ -305,6 +305,7 @@ QuickFetch.prototype = {
       // url prefix
       if (option.baseURL) {
         url = `${option.baseURL}/${url}`.replace(/\/+/g, '/');
+        delete option.baseURL;
       }
 
       // the origin fetch method
@@ -313,9 +314,9 @@ QuickFetch.prototype = {
       // timeout support
       if ('timeout' in option
         && !Number.isNaN(parseInt(option.timeout, 10))) {
-        _fetch = (() => {
-          const toFetch = () => {
-            const fetchPromise = this._originFetch.apply(null, arguments);
+        _fetch = ((fetch) => {
+          return (...args) => {
+            const fetchPromise = fetch.apply(null, args);
             // eslint-disable-next-line no-unused-vars
             const timeoutPromise = new Promise((resolve, reject) => {
               setTimeout(
@@ -325,12 +326,11 @@ QuickFetch.prototype = {
             });
             return Promise.race([fetchPromise, timeoutPromise]);
           };
-          return toFetch;
-        })();
+        })(this._originFetch);
       }
 
       const req = new Request(trim(url), option);
-      // console.log(option)
+      
       return this._parseRequestMiddlewares(req, option.fetchId).then(
         request => _fetch(request.clone()).then(
           res => this._parseResponseMiddlewares(res, option.fetchId)
