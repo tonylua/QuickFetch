@@ -8,6 +8,7 @@ beforeEach(() => {
   global.fetch = window.fetch = fetch;
 });
 afterEach(() => {
+  fetch.mockClear();
   qFetch = null;
   global.fetch = window.fetch = _originFetch;
 });
@@ -61,10 +62,53 @@ describe('test QuickFetch.js', () => {
     });
     qFetch.use(QuickFetch.REQUEST, (req, next) => {
       expect(req.url).toEqual('/ajax-api/sample/info2');
-      done();
       next(req);
     });
-    qFetch.get('/sample/info2');
+    qFetch.get('/sample/info2').finally(
+      () => {
+        const isRequest = fetch.mock.calls.length === 1
+          && fetch.mock.calls[0][0] instanceof Request
+          && fetch.mock.calls[0][0].url === '/ajax-api/sample/info2';
+        expect(isRequest).toBeTruthy();
+        done();
+      }
+    );
+  });
+
+  it('应该正确处理参数', async (done) => {
+    fetch.mockResponse(
+      JSON.stringify({
+        msg: 'ok!'
+      })
+    );
+
+    qFetch = new QuickFetch({
+      headers: {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-store'
+      }
+    });
+
+    const obj = { c: 3, d: 4 };
+
+    const res1 = await qFetch.get('/some1', obj);
+    expect(fetch.mock.calls[0][0].url).toEqual('/some1?c=3&d=4');
+    expect(fetch.mock.calls[0][0].body).toBeFalsy();
+
+    const res2 = await qFetch.post('/some2', obj);
+    expect(fetch.mock.calls[1][0].url).toEqual('/some2');
+    expect(fetch.mock.calls[1][0].body).toEqual(JSON.stringify(obj));
+
+    const res3 = await qFetch.put('/some3', obj, {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      }
+    });
+    expect(fetch.mock.calls[2][0].headers.get('Cache-Control')).toEqual('no-store');
+    expect(fetch.mock.calls[2][0].url).toEqual('/some3');
+    expect(fetch.mock.calls[2][0].body).toEqual('c=3&d=4');
+
+    done();
   });
 
   it('超时应该报错', (done) => {

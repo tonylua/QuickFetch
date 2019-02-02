@@ -290,10 +290,12 @@ QuickFetch.prototype = {
       
       // make data
       option = omit(option, 'body');
-      const needBody = !/^(get|head|options|delete)$/i.test(method);
+      const needBody = !/^(get|head)$/i.test(method);
       const sendJSON = option.headers && option.headers['Content-Type'] === 'application/json';
       if (needBody) {
-        option.body = sendJSON ? JSON.stringify(params) : params;
+        option.body = sendJSON 
+          ? JSON.stringify(params) 
+          : qs.stringify(params);
       } else {
         const strParam = qs.stringify(params);
         if (strParam.length) {
