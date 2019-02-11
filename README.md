@@ -2,6 +2,10 @@
 
 > a fetch wrapper like axios, support middlewares
 
+![](https://img.shields.io/npm/v/quickfetch.svg?style=flat)
+
+![](https://img.shields.io/npm/dt/quickfetch.svg?style=flat)
+
 ## 1. How to install
 ```
 npm i quickfetch --save
