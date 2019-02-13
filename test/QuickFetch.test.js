@@ -1,6 +1,7 @@
 import qs from 'qs';
 import fetch from 'jest-fetch-mock';
 import QuickFetch from '../src/QuickFetch';
+import CustomError from '../src/CustomError';
 
 const _originFetch = global.fetch;
 
@@ -219,37 +220,56 @@ describe('test QuickFetch.js', () => {
   });
 
   it('中间件：处理业务逻辑错误', (done) => {
+		const URL = '/ajax-api/sample/wrong';
+		
     fetch.mockResponseOnce(
       JSON.stringify({
         code: 20100,
         msg: 'wrong!'
       }),
-      { status: 200 }
+      { 
+				status: 200,
+				url: URL
+			}
     );
 
     const isValidCode = (code) => {
       const c = parseInt(code, 10);
       return (!Number.isNaN(c)) && (c < 20000);
     };
+	
+		const ERROR_BUSINESS = 'ERROR_BUSINESS';
+		const fn1 = jest.fn();
 
-    qFetch = new QuickFetch();
-    qFetch.use(QuickFetch.RESPONSE, (res, next) => {
-      if (res instanceof Response) {
-        // clone() is important!
-        return res.clone().json().then((json) => {
-          const { code } = json;
-          if (!isValidCode(code)) {
-            next(new Error('DEF' + code.toString()));
-            return;
-          }
-          next(res);
-        });
-      }
-      next(res);
-    });
+		qFetch = new QuickFetch();
+		qFetch.use(QuickFetch.RESPONSE, async (res, next) => {
+			const json = await res.clone().json(); // clone() is important!
+			const { code } = json;
+			if (!isValidCode(code)) {
+				const err = new CustomError(ERROR_BUSINESS, {
+					response: res
+				});
+				next(Promise.reject(err));
+				return;
+			}
+			next(res);
+		});
+		qFetch.use(QuickFetch.ERROR, async (err, next) => {
+			if (err.message === ERROR_BUSINESS) {
+				const { response } = err.data;
+				const json = await response.clone().json();
+				const { code } = json;
+				fn1(code);
+			}
+			next(err);
+		});
 
-    qFetch.get('/ajax-api/sample/wrong').catch((err) => {
-      expect(err.message).toBe('DEF20100');
+    qFetch.get(URL).catch((err) => {
+      expect(err.message).toBe(ERROR_BUSINESS);
+	  	expect(fn1).toHaveBeenCalledWith(20100);
+			expect(err.request).toBeInstanceOf(Request);
+			expect(err.data.response).toBeInstanceOf(Response);
+			expect(err.request.url).toEqual(err.data.response.url);
       done();
     });
   });

@@ -6,18 +6,11 @@ import map from 'lodash-es/map';
 import filter from 'lodash-es/filter';
 import trim from 'lodash-es/trim';
 import findIndex from 'lodash-es/findIndex';
-import { runInContext } from 'vm';
+import CustomError from './CustomError';
 // 这种写法无法正确 tree shaking 并会造成引用错误
 // import {
 //   mergeWith, omit, keys, map, filter, findIndex
 // } from 'lodash-es';
-
-class CustomError extends Error {
-  constructor(message, data) {
-    super(message);
-    this.data = data;
-  }
-}
 
 class OptRequest extends Request {
   constructor(input, init) {
@@ -385,6 +378,7 @@ QuickFetch.prototype = {
             res => this._parseResponseMiddlewares(res, option)
           ).catch((error) => {
             error.request = req.clone();
+						console.log(error.request.url, 111)
             return this._parseErrorMiddlewares(error, option);
           })
         }
