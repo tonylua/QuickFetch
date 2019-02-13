@@ -389,12 +389,14 @@ QuickFetch.prototype = {
           })
         }
       ).then((obj) => {
-        if (obj 
-          && obj instanceof Error 
-          && option.catchError) {
+        if (obj && obj instanceof Error && option.catchError) {
           throw obj;
         }
         return obj;
+      }).catch((err) => {
+        if (err && option.catchError) {
+          throw err;
+        }
       });
     };
   },
