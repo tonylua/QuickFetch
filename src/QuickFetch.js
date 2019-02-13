@@ -6,10 +6,37 @@ import map from 'lodash-es/map';
 import filter from 'lodash-es/filter';
 import trim from 'lodash-es/trim';
 import findIndex from 'lodash-es/findIndex';
+import { runInContext } from 'vm';
 // 这种写法无法正确 tree shaking 并会造成引用错误
 // import {
 //   mergeWith, omit, keys, map, filter, findIndex
 // } from 'lodash-es';
+
+class CustomError extends Error {
+  constructor(message, data) {
+    super(message);
+    this.data = data;
+  }
+}
+
+class OptRequest extends Request {
+  constructor(input, init) {
+    super(input, init);
+    this.init = init;
+  }
+  clone() {
+    this.init.headers = _getLastestHeaders(this);
+    return new OptRequest(this, this.init);
+  }
+}
+
+function _getLastestHeaders(request) {
+  const newHeaders = {};
+  for (const key of request.headers.keys()) {
+    newHeaders[key] = request.headers.get(key);
+  }
+  return newHeaders;
+}
 
 function _cloneObject(target) {
   return target && typeof target.clone === 'function'
@@ -21,6 +48,49 @@ function _isValidUseId(fetchId) {
   return typeof fetchId !== 'undefined' 
     && ((typeof fetchId === 'string' && fetchId.length)
       || typeof fetchId === 'number');
+}
+
+function _formatHeaders(option) {
+  if (option.headers) {
+    // clear headers
+    keys(option.headers).forEach((key) => {
+      const hVal = option.headers[key];
+      if (typeof hVal === 'undefined'
+        || hVal === null
+        || (typeof hVal === 'string' && hVal === '')) {
+        delete option.headers[key];
+      }
+      // case-sensitive
+      option.headers[key] = option.headers[key].toLowerCase();
+    });
+  }
+}
+
+function _parseBody(option, method, params) {
+  delete option.body;
+  const needBody = !/^(get|head)$/i.test(method);
+  const sendJSON = option.headers && option.headers['content-type'] === 'application/json';
+  if (needBody) {
+    option.body = sendJSON 
+      ? JSON.stringify(params) 
+      : qs.stringify(params);
+  }
+}
+
+function _getURL(option, url, params) {
+  let rUrl = url;
+  if (!option.body) {
+    const strParam = qs.stringify(params);
+    if (strParam.length) {
+      const divSign = ~rUrl.indexOf('?') ? '&' : '?';
+      rUrl += divSign + strParam;
+    }
+  }
+  // url prefix
+  if (option.baseURL) {
+    rUrl = `${option.baseURL}/${rUrl}`.replace(/\/+/g, '/');
+  }
+  return rUrl;
 }
 
 /**
@@ -71,12 +141,13 @@ QuickFetch.prototype = {
   /**
    * @private
    * @param {String} type - QuickFetch.REQUEST | QuickFetch.RESPONSE | QuickFetch.ERROR
-   * @param {string|number} [fetchId]
+   * @param {object} [option]
    */
-  _getMiddlewares(type, fetchId) {
+  _getMiddlewares(type, option) {
     const mObjArr = filter(this._mids, m => m.type === type);
     if (!mObjArr.length) return null;
     let mids = mObjArr;
+    const { fetchId } = option;
     if (_isValidUseId(fetchId)) {
       mids = filter(mids, mw => (!mw.fetchId || mw.fetchId === fetchId));
       mids = filter(mids, mw => !mw.disabledUses[fetchId]);
@@ -115,30 +186,30 @@ QuickFetch.prototype = {
   /**
    * @private
    * @param {Request} req
-   * @param {string|number} [fetchId]
+   * @param {object} [option]
    */
-  _parseRequestMiddlewares(req, fetchId) {
-    const reqMids = this._getMiddlewares(QuickFetch.REQUEST, fetchId);
+  _parseRequestMiddlewares(req, option) {
+    const reqMids = this._getMiddlewares(QuickFetch.REQUEST, option);
     return this._parseMiddlewares(reqMids, req);
   },
 
   /**
    * @private
    * @param {Response} res
-   * @param {string|number} [fetchId]
+   * @param {object} [option]
    */
-  _parseResponseMiddlewares(res, fetchId) {
-    const resMids = this._getMiddlewares(QuickFetch.RESPONSE, fetchId);
+  _parseResponseMiddlewares(res, option) {
+    const resMids = this._getMiddlewares(QuickFetch.RESPONSE, option);
     return this._parseMiddlewares(resMids, res);
   },
 
   /**
    * @private
    * @param {Error} err
-   * @param {string|number} [fetchId]
+   * @param {object} [option]
    */
-  _parseErrorMiddlewares(err, fetchId) {
-    const errMids = this._getMiddlewares(QuickFetch.ERROR, fetchId);
+  _parseErrorMiddlewares(err, option) {
+    const errMids = this._getMiddlewares(QuickFetch.ERROR, option);
     return this._parseMiddlewares(errMids, err);
   },
 
@@ -257,10 +328,10 @@ QuickFetch.prototype = {
     if (typeof method === 'undefined') method = 'get';
     method = method.toUpperCase();
 
-    return function(url, params, option) {
-      if (typeof params === 'undefined' || !params) params = {};
-      if (typeof option === 'undefined' || !option) option = {};
+    // the origin fetch method
+    let _fetch = this._originFetch;
 
+    return function(url, params = {}, option = {}) {
       // merge option
       option = mergeWith({
         method,
@@ -276,53 +347,22 @@ QuickFetch.prototype = {
         catchError: true
       }, this._globalOption, option);
 
-      // clear headers
-      if (option.headers) {
-        keys(option.headers).forEach((key) => {
-          const hVal = option.headers[key];
-          if (typeof hVal === 'undefined'
-            || hVal === null
-            || (typeof hVal === 'string' && hVal === '')) {
-            delete option.headers[key];
-          }
-        });
-      }
-      
-      // make data
-      option = omit(option, 'body');
-      const needBody = !/^(get|head)$/i.test(method);
-      const sendJSON = option.headers && option.headers['Content-Type'] === 'application/json';
-      if (needBody) {
-        option.body = sendJSON 
-          ? JSON.stringify(params) 
-          : qs.stringify(params);
-      } else {
-        const strParam = qs.stringify(params);
-        if (strParam.length) {
-          const divSign = ~url.indexOf('?') ? '&' : '?';
-          url += divSign + strParam;
-        }
-      }
-
-      // url prefix
-      if (option.baseURL) {
-        url = `${option.baseURL}/${url}`.replace(/\/+/g, '/');
-        delete option.baseURL;
-      }
-
-      // the origin fetch method
-      let _fetch = this._originFetch;
+      _formatHeaders(option);
+      _parseBody(option, method, params);
+      let rUrl = _getURL(option, url, params);
+      const req = new OptRequest(trim(rUrl), option);
 
       // timeout support
       if ('timeout' in option
         && !Number.isNaN(parseInt(option.timeout, 10))) {
         _fetch = ((fetch) => {
-          return (...args) => {
-            const fetchPromise = fetch.apply(null, args);
+          return (request) => {
+            const fetchPromise = fetch.apply(null, [request]);
             // eslint-disable-next-line no-unused-vars
             const timeoutPromise = new Promise((resolve, reject) => {
+              const err = new CustomError(QuickFetch.EXCEPTION_TIMEOUT, request)
               setTimeout(
-                () => { reject(new Error(QuickFetch.EXCEPTION_TIMEOUT)); },
+                () => { reject(err); },
                 option.timeout
               );
             });
@@ -330,16 +370,24 @@ QuickFetch.prototype = {
           };
         })(this._originFetch);
       }
-
-      const req = new Request(trim(url), option);
       
-      return this._parseRequestMiddlewares(req, option.fetchId).then(
-        request => _fetch(request.clone()).then(
-          res => this._parseResponseMiddlewares(res, option.fetchId)
-        ).catch((error) => {
-          error.request = req.clone();
-          return this._parseErrorMiddlewares(error, option.fetchId);
-        })
+      return this._parseRequestMiddlewares(req, option).then(
+        request => {
+          let optClone = request.init;
+          optClone.headers = _getLastestHeaders(request);
+          
+          _formatHeaders(optClone);
+          _parseBody(optClone, method, params);
+          let rUrl = _getURL(optClone, url, params);
+          const reqClone = new OptRequest(rUrl, optClone);
+
+          return _fetch(reqClone).then(
+            res => this._parseResponseMiddlewares(res, option)
+          ).catch((error) => {
+            error.request = req.clone();
+            return this._parseErrorMiddlewares(error, option);
+          })
+        }
       ).then((obj) => {
         if (obj 
           && obj instanceof Error 

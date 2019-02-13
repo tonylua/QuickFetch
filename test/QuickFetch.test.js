@@ -1,3 +1,4 @@
+import qs from 'qs';
 import fetch from 'jest-fetch-mock';
 import QuickFetch from '../src/QuickFetch';
 
@@ -66,10 +67,9 @@ describe('test QuickFetch.js', () => {
     });
     qFetch.get('/sample/info2').finally(
       () => {
-        const isRequest = fetch.mock.calls.length === 1
-          && fetch.mock.calls[0][0] instanceof Request
-          && fetch.mock.calls[0][0].url === '/ajax-api/sample/info2';
-        expect(isRequest).toBeTruthy();
+        expect(fetch.mock.calls.length).toBe(1);
+        expect(fetch.mock.calls[0][0] instanceof Request).toBeTruthy();
+        expect(fetch.mock.calls[0][0].url).toEqual('/ajax-api/sample/info2');
         done();
       }
     );
@@ -117,7 +117,7 @@ describe('test QuickFetch.js', () => {
     );
 
     qFetch = new QuickFetch({
-      timeout: 50
+      timeout: 5
     });
 
     qFetch.get('/ajax-api/sample/delay').catch((err) => {
@@ -132,7 +132,7 @@ describe('test QuickFetch.js', () => {
     );
 
     qFetch = new QuickFetch({
-      timeout: 50,
+      timeout: 5,
       catchError: false
     });
 
@@ -144,7 +144,48 @@ describe('test QuickFetch.js', () => {
     setTimeout(() => {
       expect(flag).toBeFalsy();
       done();
-    }, 200);
+    }, 20);
+  });
+
+  it('中间件：动态改变请求 headers', (done) => {
+    fetch.mockResponse(
+      () => new Promise(resolve => setTimeout(() => resolve({ body: 'ok' }), 100))
+    );
+
+    qFetch = new QuickFetch({
+      timeout: 5
+    });
+
+    const obj1 = {a: 1, b: 2};
+    const obj2 = {c: 3, d: 4};
+
+    let reqFlag = 0;
+    qFetch.use(QuickFetch.REQUEST, (req, next) => {
+      if (reqFlag++ < 1) {
+        req.headers.set('Content-Type', 'foo');
+      } else {
+        req.headers.set('Content-Type', 'application/json');
+      }
+      next(req);
+    });
+
+    qFetch.post('/aaa', obj1).catch((err) => {
+      expect(err.message).toBe(QuickFetch.EXCEPTION_TIMEOUT);
+
+      const request1 = err.data;
+      expect(request1.headers.get('Content-Type')).toEqual('foo');
+      expect(request1.body).toEqual(qs.stringify(obj1));
+      
+      qFetch.post('/bbb', obj2).catch((err2) => {
+        expect(err2.message).toBe(QuickFetch.EXCEPTION_TIMEOUT);
+        
+        const request2 = err2.data;
+        expect(request2.headers.get('Content-Type')).toEqual('application/json');
+        expect(request2.body).toEqual(JSON.stringify(obj2));
+
+        done();
+      });
+    });
   });
 
   it('中间件：处理 HTTP 状态', (done) => {
