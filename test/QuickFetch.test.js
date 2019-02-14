@@ -36,8 +36,8 @@ describe('test QuickFetch.js', () => {
     ).toBeTruthy();
   });
 
-  it('应该正确响应正常的请求', (done) => {
-    fetch.mockResponseOnce(
+  it('应该正确响应正常的请求', async (done) => {
+    fetch.mockResponses([
       JSON.stringify({
         code: 0,
         msg: 'ok',
@@ -46,16 +46,41 @@ describe('test QuickFetch.js', () => {
         }
       }),
       { status: 200 }
-    );
+    ],[
+      JSON.stringify({
+        code: 0,
+        msg: 'ok',
+        data: {
+          hello: 'everybody!'
+        }
+      }),
+      { status: 200 }
+    ],[
+      JSON.stringify({
+        code: 0,
+        msg: 'ok',
+        data: {
+          hello: 'bro!'
+        }
+      }),
+      { status: 200 }
+    ]);
 
     qFetch = new QuickFetch();
-    qFetch.get('/ajax-api/sample/info').then(
-      async (res) => {
-        const json = await res.json();
-        expect(json.data.hello).toEqual('everyone!');
-        done();
-      }
-    );
+    
+		const res1 = await qFetch.get('/ajax-api/sample/info');
+    const json1 = await res1.json();
+    expect(json1.data.hello).toEqual('everyone!');
+		
+		const res2 = await qFetch.delete('/ajax-api/sample/del');
+    const json2 = await res2.json();
+    expect(json2.data.hello).toEqual('everybody!');
+
+		const res3 = await qFetch.patch('/ajax-api/sample/hey');
+    const json3 = await res3.json();
+		expect(json3.data.hello).toEqual('bro!');
+    
+		done();
   });
 
   it('应该正确处理 url 前缀', (done) => {
@@ -86,7 +111,8 @@ describe('test QuickFetch.js', () => {
     qFetch = new QuickFetch({
       headers: {
         'Content-Type': 'application/json',
-        'Cache-Control': 'no-store'
+        'Cache-Control': 'no-store',
+				'X-I-Love-You': ''
       }
     });
 
@@ -95,6 +121,12 @@ describe('test QuickFetch.js', () => {
     const res1 = await qFetch.get('/some1', obj);
     expect(fetch.mock.calls[0][0].url).toEqual('/some1?c=3&d=4');
     expect(fetch.mock.calls[0][0].body).toBeFalsy();
+		
+		expect(fetch.mock.calls[0][0].headers.get('Cache-Control')).toEqual('no-store');
+		expect(fetch.mock.calls[0][0].init.headers['Cache-Control']).toBeUndefined();
+		expect(fetch.mock.calls[0][0].init.headers['cache-control']).toEqual('no-store');
+		expect(fetch.mock.calls[0][0].headers.get('X-I-Love-You')).toBeFalsy();
+		expect(fetch.mock.calls[0][0].init.headers['x-i-love-you']).toBeUndefined();
 
     const res2 = await qFetch.post('/some2', obj);
     expect(fetch.mock.calls[1][0].url).toEqual('/some2');

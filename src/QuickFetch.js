@@ -45,16 +45,18 @@ function _isValidUseId(fetchId) {
 
 function _formatHeaders(option) {
   if (option.headers) {
-    // clear headers
     keys(option.headers).forEach((key) => {
-      const hVal = option.headers[key];
+      let hVal = option.headers[key];
+      // case-sensitive
+			delete option.headers[key];
+			key = key.toLowerCase();
+			option.headers[key] = hVal;
+			// clear
       if (typeof hVal === 'undefined'
         || hVal === null
-        || (typeof hVal === 'string' && hVal === '')) {
+        || hVal === '') {
         delete option.headers[key];
       }
-      // case-sensitive
-      option.headers[key] = option.headers[key].toLowerCase();
     });
   }
 }
@@ -317,8 +319,7 @@ QuickFetch.prototype = {
    * @param {string} method - a HTTP verb
    * @param {function} a function to execute the real HTTP verb
    */
-  _doRequest(method) {
-    if (typeof method === 'undefined') method = 'get';
+  _doRequest(method = 'get') {
     method = method.toUpperCase();
 
     // the origin fetch method
@@ -346,8 +347,7 @@ QuickFetch.prototype = {
       const req = new OptRequest(trim(rUrl), option);
 
       // timeout support
-      if ('timeout' in option
-        && !Number.isNaN(parseInt(option.timeout, 10))) {
+      if ('timeout' in option && !Number.isNaN(parseInt(option.timeout, 10))) {
         _fetch = ((fetch) => {
           return (request) => {
             const fetchPromise = fetch.apply(null, [request]);
