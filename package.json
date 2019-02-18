@@ -1,12 +1,12 @@
 {
   "name": "quickfetch",
-  "version": "0.0.11",
+  "version": "0.0.12",
   "description": "a fetch-based HTTP request tool like axios",
   "main": "dist/QuickFetch.min.js",
   "scripts": {
     "test": "jest",
-    "doc": "jsdoc2md src/QuickFetch.js --template README.hbs > README.md",
-    "build": "parcel build src/QuickFetch.js -d dist/ --out-file QuickFetch.min.js --no-source-maps --no-cache"
+    "doc": "jsdoc2md src/index.js src/MiddlewareHolder.js --template README.hbs > README.md",
+    "build": "parcel build src/index.js -d dist/ --out-file QuickFetch.min.js --no-source-maps --no-cache"
   },
   "pre-commit": [
     "test"

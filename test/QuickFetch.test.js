@@ -1,6 +1,6 @@
 import qs from 'qs';
 import fetch from 'jest-fetch-mock';
-import QuickFetch from '../src/QuickFetch';
+import QuickFetch from '../src/index';
 import CustomError from '../src/CustomError';
 
 const _originFetch = global.fetch;
@@ -18,22 +18,11 @@ afterEach(() => {
 describe('test QuickFetch.js', () => {
   
   it('可以遍历出正确的方法', () => {
-    qFetch = new QuickFetch();
-
-    const keys = [];
-    for (const key in qFetch) {
-      keys.push(key);
-    }
-
-    expect(
-      ['use', 'get', 'post', 'delete', 'put', 'patch', 'sequence'].every(
-        method => ~keys.indexOf(method)
-      )
-    ).toBeTruthy();
-
-    expect(
-      keys.every(key => key !== 'constructor' && !/^_/.test(key))
-    ).toBeTruthy();
+    ['use', 'get', 'post', 'delete', 'put', 'patch', 'sequence'].forEach(
+      method => {
+				expect(QuickFetch.prototype[method]).toBeTruthy();
+			}
+    );
   });
 
   it('应该正确响应正常的请求', async (done) => {

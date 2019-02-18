@@ -2,10 +2,6 @@
 
 > a fetch wrapper like axios, support middlewares
 
-![](https://img.shields.io/npm/v/quickfetch.svg?style=flat)
-
-![](https://img.shields.io/npm/dt/quickfetch.svg?style=flat)
-
 ## 1. How to install
 ```
 npm i quickfetch --save
@@ -18,18 +14,27 @@ see `/example/fetchWrapper.js` and `test/QuickFetch.test.js`
 ## 3. API
 <a name="QuickFetch"></a>
 
-## QuickFetch
-**Kind**: global class  
+## QuickFetch ⇐ <code>MiddlewareHolder</code>
+QuickFetch
 
-* [QuickFetch](#QuickFetch)
+**Kind**: global class  
+**Extends**: <code>MiddlewareHolder</code>  
+
+* [QuickFetch](#QuickFetch) ⇐ <code>MiddlewareHolder</code>
     * [new QuickFetch([option])](#new_QuickFetch_new)
-    * [.use(type, middleware, [fetchId])](#QuickFetch+use) ⇒ <code>function</code>
-    * [.get(url, [params], [option])](#QuickFetch+get) ⇒ <code>Promise</code>
-    * [.post(url, [params], [option])](#QuickFetch+post) ⇒ <code>Promise</code>
-    * [.delete(url, [params], [option])](#QuickFetch+delete) ⇒ <code>Promise</code>
-    * [.put(url, [params], [option])](#QuickFetch+put) ⇒ <code>Promise</code>
-    * [.patch(url, [params], [option])](#QuickFetch+patch) ⇒ <code>Promise</code>
-    * [.sequence(requestPromiseArr)](#QuickFetch+sequence) ⇒ <code>Array.&lt;Response&gt;</code>
+    * _instance_
+        * [.get(url, [params], [option])](#QuickFetch+get) ⇒ <code>Promise</code>
+        * [.post(url, [params], [option])](#QuickFetch+post) ⇒ <code>Promise</code>
+        * [.delete(url, [params], [option])](#QuickFetch+delete) ⇒ <code>Promise</code>
+        * [.put(url, [params], [option])](#QuickFetch+put) ⇒ <code>Promise</code>
+        * [.patch(url, [params], [option])](#QuickFetch+patch) ⇒ <code>Promise</code>
+        * [.sequence(requestPromiseArr)](#QuickFetch+sequence) ⇒ <code>Array.&lt;Response&gt;</code>
+        * [.use(type, middleware, [fetchId])](#MiddlewareHolder+use) ⇒ <code>object</code>
+    * _static_
+        * [.REQUEST](#QuickFetch.REQUEST)
+        * [.RESPONSE](#QuickFetch.RESPONSE)
+        * [.ERROR](#QuickFetch.ERROR)
+        * [.EXCEPTION_TIMEOUT](#QuickFetch.EXCEPTION_TIMEOUT)
 
 <a name="new_QuickFetch_new"></a>
 
@@ -43,20 +48,6 @@ a fetch-based HTTP request tool
 | [option.baseURL] | <code>string</code> |  | an optional url prefix |
 | [option.timeout] | <code>string</code> | <code>30000</code> | an optional timeout |
 | [option.catchError] | <code>Boolean</code> | <code>true</code> | optional,   if true then just parse error in middleware, otherwise throw it to endpoint |
-
-<a name="QuickFetch+use"></a>
-
-### quickFetch.use(type, middleware, [fetchId]) ⇒ <code>function</code>
-regist a middleware
-
-**Kind**: instance method of [<code>QuickFetch</code>](#QuickFetch)  
-**Returns**: <code>function</code> - unuse  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| type | <code>string</code> | QuickFetch.REQUEST | QuickFetch.RESPONSE | QuickFetch.ERROR |
-| middleware | <code>function</code> | a function looks like '(req|res|err, next) => {}' |
-| [fetchId] | <code>string</code> \| <code>number</code> | a optional id for special requests |
 
 <a name="QuickFetch+get"></a>
 
@@ -154,3 +145,33 @@ make batch requests
 | --- | --- |
 | requestPromiseArr | <code>Array.&lt;Promise&gt;</code> | 
 
+<a name="MiddlewareHolder+use"></a>
+
+### quickFetch.use(type, middleware, [fetchId]) ⇒ <code>object</code>
+regist a middleware
+
+**Kind**: instance method of [<code>QuickFetch</code>](#QuickFetch)  
+**Returns**: <code>object</code> - actions - { unuse, pause, resume }  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| type | <code>string</code> | QuickFetch.REQUEST | QuickFetch.RESPONSE | QuickFetch.ERROR |
+| middleware | <code>function</code> | a function looks like '(req|res|err, next) => {}' |
+| [fetchId] | <code>string</code> \| <code>number</code> | a optional id for special requests |
+
+<a name="QuickFetch.REQUEST"></a>
+
+### QuickFetch.REQUEST
+**Kind**: static property of [<code>QuickFetch</code>](#QuickFetch)  
+<a name="QuickFetch.RESPONSE"></a>
+
+### QuickFetch.RESPONSE
+**Kind**: static property of [<code>QuickFetch</code>](#QuickFetch)  
+<a name="QuickFetch.ERROR"></a>
+
+### QuickFetch.ERROR
+**Kind**: static property of [<code>QuickFetch</code>](#QuickFetch)  
+<a name="QuickFetch.EXCEPTION_TIMEOUT"></a>
+
+### QuickFetch.EXCEPTION\_TIMEOUT
+**Kind**: static property of [<code>QuickFetch</code>](#QuickFetch)  
