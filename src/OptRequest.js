@@ -7,7 +7,7 @@ class OptRequest extends Request {
   }
   clone() {
     this.init.headers = _getLastestHeaders(this);
-    return new OptRequest(this, this.init);
+    return new OptRequest(super.clone(), this.init);
   }
 }
 
