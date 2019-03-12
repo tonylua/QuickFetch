@@ -10,6 +10,7 @@ beforeEach(() => {
   global.fetch = window.fetch = fetch;
 });
 afterEach(() => {
+  jest.useRealTimers();
   fetch.mockClear();
   qFetch = null;
   global.fetch = window.fetch = _originFetch;
@@ -167,6 +168,29 @@ describe('test QuickFetch.js', () => {
       expect(flag).toBeFalsy();
       done();
     }, 20);
+  });
+
+  it('自定义不需要 body 的请求方法', (done) => {
+    fetch.mockResponse(
+      () => new Promise(resolve => setTimeout(() => resolve({ body: 'ok' }), 100))
+    );
+    qFetch = new QuickFetch({
+      ignoreBodyMethods: ['get', 'head', 'delete'],
+      timeout: 5
+    });
+
+    qFetch.delete('/ajax-api/sample/del').catch((err) => {
+      expect(err.request.body).toBeFalsy();
+      expect(err.request.init.body).toBeFalsy();
+
+      qFetch.delete('/ajax-api/sample/del', null, {
+        ignoreBodyMethods: ['get', 'head']
+      }).catch((err) => {
+        expect(err.request.body).toBeTruthy();
+        expect(err.request.init.body).toBeTruthy();
+        done();
+      });
+    });
   });
 
   it('中间件：动态改变请求 headers', (done) => {

@@ -2,6 +2,7 @@ import mergeWith from 'lodash-es/mergeWith';
 import saveAs from 'file-saver';
 import QuickFetch from 'quickfetch';
 import useHeadersMiddleware from './middlewares/headers';
+import useBodyMiddleware from './middlewares/body';
 import useTimeoutMiddleware from './middlewares/timeout';
 import useBadHTTPMiddleware from './middlewares/badHTTP';
 import useWrongBusiMiddleware from './middlewares/wrongBusiness';
@@ -12,10 +13,12 @@ const TIMEOUT = 10000;
 const Wrapper = function(option) {
   const r = new QuickFetch(mergeWith({
     timeout: TIMEOUT,
-    baseURL: BASE_URL
+    baseURL: BASE_URL,
+    ignoreBodyMethods: ['get', 'head', 'delete'],
   }, option));
 
   useHeadersMiddleware(r);
+  useBodyMiddleware(r);
   useTimeoutMiddleware(r);
   useBadHTTPMiddleware(r);
   const wrongBusiMiddleware = useWrongBusiMiddleware(r);

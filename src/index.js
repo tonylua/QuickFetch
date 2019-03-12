@@ -77,19 +77,32 @@ class QuickFetch extends MiddlewareHolder {
 
     return function(url, params = {}, option = {}) {
       // merge option
-      option = mergeWith({
-        method,
-        credentials: 'include',
-        mode: 'cors',
-        cache: 'reload',
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
+      option = [
+        {
+          method,
+          credentials: 'include',
+          mode: 'cors',
+          cache: 'reload',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          },
+          ignoreBodyMethods: ['get', 'head'],
+          timeout: 30000,
+          baseURL: '',
+          catchError: true
         },
-        timeout: 30000,
-        baseURL: '',
-        catchError: true
-      }, this._globalOption, option);
+        this._globalOption,
+        option
+      ].reduce((rst, opt) => {
+        rst = mergeWith(rst, opt, (objValue, srcValue, key, object, source, stack) => {
+          if (Array.isArray(objValue) && Array.isArray(srcValue)) {
+            return srcValue; // 合并数组时直接替换
+          }
+          return void(0); // 默认合并
+        });
+        return rst;
+      }, {})
 
       _formatHeaders(option);
       _parseBody(option, method, params);

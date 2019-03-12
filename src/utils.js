@@ -40,7 +40,8 @@ export function _formatHeaders(option) {
 
 export function _parseBody(option, method, params) {
   delete option.body;
-  const needBody = !/^(get|head)$/i.test(method);
+
+  const needBody = !~option.ignoreBodyMethods.indexOf(method.toLowerCase());
   const sendJSON = option.headers && option.headers['content-type'] === 'application/json';
   if (needBody) {
     option.body = sendJSON 
