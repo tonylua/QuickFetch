@@ -14,7 +14,7 @@ class MiddlewareHolder {
   /**
    * @private
    * @param {String} type - QuickFetch.REQUEST | QuickFetch.RESPONSE | QuickFetch.ERROR
-   * @param {object} [option]
+   * @param {Object} [option]
    */
   _getMiddlewares(type, option) {
     const mObjArr = this._mids.filter(m => m.type === type);
@@ -37,8 +37,9 @@ class MiddlewareHolder {
    * @private
    * @param {Array} mids 
    * @param {Request|Response|JSON|Blob} target
+   * @param {Object} option
    */
-  _parseMiddlewares(mids, target) {
+  _parseMiddlewares(mids, target, option) {
     if (!mids) {
       return Promise.resolve(_cloneObject(target));
     }
@@ -50,6 +51,7 @@ class MiddlewareHolder {
           return resolve(rtn);
         }
         const mw = mids.shift();
+        rtn.option = option;
         mw(rtn, next);
       };
       next(_cloneObject(target));
