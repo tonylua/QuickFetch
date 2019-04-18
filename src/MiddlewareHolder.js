@@ -46,14 +46,14 @@ class MiddlewareHolder {
     // eslint-disable-next-line no-unused-vars
     return new Promise(((resolve, reject) => {
       const next = (obj) => {
-        let rtn = _cloneObject(obj);
+        const rtn = _cloneObject(obj);
+        if (params) {
+          Object.keys(params).forEach(k => rtn[k] = params[k]);
+        }
         if (!mids.length) {
           return resolve(rtn);
         }
         const mw = mids.shift();
-        if (params) {
-          Object.keys(params).forEach(k => rtn[k] = params[k]);
-        }
         mw(rtn, next);
       };
       next(_cloneObject(target));
