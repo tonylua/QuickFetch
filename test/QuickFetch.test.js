@@ -318,6 +318,24 @@ describe('test QuickFetch.js', () => {
       done();
     });
   });
+  
+  it.only('中间件：在 response 中获知 method', (done) => {
+    fetch.mockResponse(
+      JSON.stringify({
+        msg: 'ok!'
+      })
+    );
+    
+    qFetch = new QuickFetch();
+    qFetch.use(QuickFetch.RESPONSE, (res, next) => {
+      expect(res.method).toEqual('PUT');
+      next(res);
+      
+      done();
+    });
+    
+    qFetch.put('/ajax-api/sample/some', null);
+  });
 
   it('中间件：只对特定 fetch 请求生效的', () => {
     const fn1 = jest.fn();
