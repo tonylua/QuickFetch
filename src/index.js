@@ -41,7 +41,7 @@ class QuickFetch extends MiddlewareHolder {
    */
   _parseRequestMiddlewares(req, option) {
     const reqMids = this._getMiddlewares(QuickFetch.REQUEST, option);
-    return this._parseMiddlewares(reqMids, req, option);
+    return this._parseMiddlewares(reqMids, req);
   }
 
   /**
@@ -51,7 +51,9 @@ class QuickFetch extends MiddlewareHolder {
    */
   _parseResponseMiddlewares(res, option) {
     const resMids = this._getMiddlewares(QuickFetch.RESPONSE, option);
-    return this._parseMiddlewares(resMids, res, option);
+    return this._parseMiddlewares(resMids, res, {
+      method: option.method.toUpperCase()
+    });
   }
 
   /**
@@ -61,7 +63,7 @@ class QuickFetch extends MiddlewareHolder {
    */
   _parseErrorMiddlewares(err, option) {
     const errMids = this._getMiddlewares(QuickFetch.ERROR, option);
-    return this._parseMiddlewares(errMids, err, option);
+    return this._parseMiddlewares(errMids, err);
   }
 
   /**

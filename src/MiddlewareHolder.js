@@ -37,21 +37,23 @@ class MiddlewareHolder {
    * @private
    * @param {Array} mids 
    * @param {Request|Response|JSON|Blob} target
-   * @param {Object} option
+   * @param {Object} [params = null]
    */
-  _parseMiddlewares(mids, target, option) {
+  _parseMiddlewares(mids, target, params = null) {
     if (!mids) {
       return Promise.resolve(_cloneObject(target));
     }
     // eslint-disable-next-line no-unused-vars
     return new Promise(((resolve, reject) => {
       const next = (obj) => {
-        const rtn = _cloneObject(obj);
+        let rtn = _cloneObject(obj);
         if (!mids.length) {
           return resolve(rtn);
         }
         const mw = mids.shift();
-        rtn.option = option;
+        if (params) {
+          Object.keys(params).forEach(k => rtn[k] = params[k]);
+        }
         mw(rtn, next);
       };
       next(_cloneObject(target));
