@@ -319,7 +319,7 @@ describe('test QuickFetch.js', () => {
     });
   });
   
-  it.only('中间件：在 response 中获知 method', (done) => {
+  it('中间件：在 response 中获知 method', (done) => {
     fetch.mockResponse(
       JSON.stringify({
         msg: 'ok!'
