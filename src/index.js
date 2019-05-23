@@ -142,8 +142,8 @@ class QuickFetch extends MiddlewareHolder {
           return _fetch(reqClone).then(
             res => this._parseResponseMiddlewares(res, option)
           ).catch((error) => {
+						console.log(error, 111)
             error.request = req.clone();
-						console.log(error.request.url, 111)
             return this._parseErrorMiddlewares(error, option);
           })
         }

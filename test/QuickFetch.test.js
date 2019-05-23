@@ -319,6 +319,79 @@ describe('test QuickFetch.js', () => {
     });
   });
   
+  it('中间件：多个错误只响应第一个', (done) => {
+    fetch.mockResponseOnce(
+      JSON.stringify({
+        code: 20123,
+        msg: 'not ok',
+        data: {}
+      }),
+      { status: 567 }
+    );
+  
+    const isBadRequest = status => status >= 300;
+    const isValidCode = (code) => {
+      const c = parseInt(code, 10);
+      return (!Number.isNaN(c)) && (c < 20000);
+    };
+    const ERROR_HTTP = 'ERROR_HTTP';
+    const ERROR_BUSINESS = 'ERROR_BUSINESS';
+    const fn1 = jest.fn();
+  
+    qFetch = new QuickFetch();
+    qFetch.use(QuickFetch.RESPONSE, (res, next) => {
+      const { status } = res;
+      if (isBadRequest(status)) {
+        const err = new CustomError(ERROR_HTTP, {
+        	response: res
+        });
+        throw err;
+        // next(Promise.reject(err));
+        return;
+      }
+      next(res);
+    });
+    qFetch.use(QuickFetch.ERROR, async (err, next) => {
+    	if (err.message === ERROR_HTTP) {
+    		const { status } = err.data.response;
+        fn1(status);
+    	}
+    	next(err);
+    });
+    qFetch.use(QuickFetch.RESPONSE, async (res, next) => {
+      if (!(res instanceof Response)) {
+        next(res);
+        return;
+      }
+    	const json = await res.clone().json(); // clone() is important!
+    	const { code } = json;
+    	if (!isValidCode(code)) {
+    		const err = new CustomError(ERROR_BUSINESS, {
+    			response: res
+    		});
+        throw err;
+    		// next(Promise.reject(err));
+    		return;
+    	}
+    	next(res);
+    });
+    qFetch.use(QuickFetch.ERROR, async (err, next) => {
+    	if (err.message === ERROR_BUSINESS) {
+    		const { response } = err.data;
+    		const json = await response.clone().json();
+    		const { code } = json;
+    		fn1(code);
+    	}
+    	next(err);
+    });
+  
+    qFetch.post('/foo/bar').finally(() => {
+      expect(fn1.mock.calls.length).toBe(1);
+      expect(fn1.mock.calls[0][0]).toEqual(567);
+      done();
+    });
+  });
+  
   it('中间件：在 response 中获知 method', (done) => {
     fetch.mockResponse(
       JSON.stringify({
