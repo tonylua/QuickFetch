@@ -409,6 +409,39 @@ describe('test QuickFetch.js', () => {
     
     qFetch.put('/ajax-api/sample/some', null);
   });
+  
+  it('中间件：在 response 中获知请求的 headers', (done) => {
+    fetch.mockResponse(
+      JSON.stringify({
+        msg: 'ok!'
+      })
+    );
+    
+    qFetch = new QuickFetch();
+    qFetch.use(QuickFetch.RESPONSE, (res, next) => {
+      expect(res.requestHeaders).toBeTruthy();
+      if (res.method === 'PUT') {
+        expect(res.requestHeaders.get('X-Header-Param-1')).toEqual('hello');
+      }
+      if (res.method === 'DELETE') {
+        expect(res.requestHeaders.get('X-Header-Param-1')).toEqual('world');
+      }
+      next(res);
+      
+      done();
+    });
+    
+    qFetch.put('/ajax-api/sample/foo', null, {
+      headers: {
+        'X-Header-Param-1': 'hello'
+      }
+    });
+    qFetch.delete('/ajax-api/sample/bar', null, {
+      headers: {
+        'X-Header-Param-1': 'world'
+      }
+    });
+  });
 
   it('中间件：只对特定 fetch 请求生效的', () => {
     const fn1 = jest.fn();

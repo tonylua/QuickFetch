@@ -2,6 +2,7 @@ import qs from 'qs';
 import mergeWith from 'lodash-es/mergeWith';
 import omit from 'lodash-es/omit';
 import trim from 'lodash-es/trim';
+import isEmpty from 'lodash-es/isEmpty';
 import MiddlewareHolder from './MiddlewareHolder';
 import CustomError from './CustomError';
 import OptRequest from './OptRequest';
@@ -51,9 +52,15 @@ class QuickFetch extends MiddlewareHolder {
    */
   _parseResponseMiddlewares(res, option) {
     const resMids = this._getMiddlewares(QuickFetch.RESPONSE, option);
-    return this._parseMiddlewares(resMids, res, {
+    const parseParams = {
       method: option.method.toUpperCase()
-    });
+    };
+    if (!isEmpty(option.headers)) {
+      try {
+        parseParams.requestHeaders = new Headers(option.headers);
+      } catch(ex) {}
+    }
+    return this._parseMiddlewares(resMids, res, parseParams);
   }
 
   /**
