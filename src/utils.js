@@ -42,8 +42,9 @@ export function _parseBody(option, method, params) {
   delete option.body;
 
   const needBody = !~option.ignoreBodyMethods.indexOf(method.toLowerCase());
-  const sendJSON = option.headers 
-    && /^application\/json;?/.test(option.headers['content-type']);
+  const sendJSON = option.forceJSON
+    || (option.headers 
+        && /^application\/(merge\-patch\+)?json;?/.test(option.headers['content-type']));
   if (needBody) {
     option.body = sendJSON 
       ? JSON.stringify(params) 

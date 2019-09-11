@@ -130,6 +130,23 @@ describe('test QuickFetch.js', () => {
     expect(fetch.mock.calls[2][0].headers.get('Cache-Control')).toEqual('no-store');
     expect(fetch.mock.calls[2][0].url).toEqual('/some3');
     expect(fetch.mock.calls[2][0].body).toEqual('c=3&d=4');
+    
+    const res4 = await qFetch.patch('/some4', obj, {
+      headers: {
+        'Content-Type': 'application/merge-patch+json'
+      }
+    });
+    expect(fetch.mock.calls[3][0].url).toEqual('/some4');
+    expect(fetch.mock.calls[3][0].body).toEqual(JSON.stringify(obj));
+    
+    const res5 = await qFetch.put('/some5', obj, {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      forceJSON: true
+    });
+    expect(fetch.mock.calls[4][0].url).toEqual('/some5');
+    expect(fetch.mock.calls[4][0].body).toEqual(JSON.stringify(obj));
 
     done();
   });
