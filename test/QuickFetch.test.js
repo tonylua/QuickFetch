@@ -139,14 +139,22 @@ describe('test QuickFetch.js', () => {
     expect(fetch.mock.calls[3][0].url).toEqual('/some4');
     expect(fetch.mock.calls[3][0].body).toEqual(JSON.stringify(obj));
     
-    const res5 = await qFetch.put('/some5', obj, {
+    const res5 = await qFetch.patch('/some5', obj, {
+      headers: {
+        'Content-Type': 'application/alto-netwokmap+json'
+      }
+    });
+    expect(fetch.mock.calls[4][0].url).toEqual('/some5');
+    expect(fetch.mock.calls[4][0].body).toEqual(JSON.stringify(obj));
+    
+    const res6 = await qFetch.put('/some6', obj, {
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded'
       },
       forceJSON: true
     });
-    expect(fetch.mock.calls[4][0].url).toEqual('/some5');
-    expect(fetch.mock.calls[4][0].body).toEqual(JSON.stringify(obj));
+    expect(fetch.mock.calls[5][0].url).toEqual('/some6');
+    expect(fetch.mock.calls[5][0].body).toEqual(JSON.stringify(obj));
 
     done();
   });
