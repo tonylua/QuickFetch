@@ -10,14 +10,34 @@ import {
 	_getLastestHeaders,
 	_formatHeaders,
 	_parseBody,
-	_getURL
+	_getURL,
+  _getDefaultFetchId
 } from './utils';
+
+const _abortControllers = {};
+const supportsAbort = typeof AbortController === 'function';
 
 /**
  * QuickFetch
  * @extends MiddlewareHolder
  */
 class QuickFetch extends MiddlewareHolder {
+  
+  /**
+   * cancel a fetch action
+   * @static
+   * @param {string|number|symbol} id - fetchId
+   */
+  static abort(id) {
+    if (!supportsAbort) return;
+    const ac = _abortControllers[id];
+    if (!ac) return;
+    if (ac instanceof AbortController) {
+      // console.log(id, 'abort');
+      ac.abort();
+    } 
+    delete _abortControllers[id];
+  }
 	
 	/**
 	* QuickFetch constructor
@@ -83,8 +103,10 @@ class QuickFetch extends MiddlewareHolder {
 
     // the origin fetch method
     let _fetch = this._originFetch;
+    let _this = this;
 
     return function(url, params = {}, option = {}) {
+      
       // merge option
       option = [
         {
@@ -99,7 +121,8 @@ class QuickFetch extends MiddlewareHolder {
           ignoreBodyMethods: ['get', 'head'],
           timeout: 30000,
           baseURL: '',
-          catchError: true
+          catchError: true,
+          fetchId: _getDefaultFetchId()
         },
         this._globalOption,
         option
@@ -111,7 +134,24 @@ class QuickFetch extends MiddlewareHolder {
           return void(0); // 默认合并
         });
         return rst;
-      }, {})
+      }, {});
+      
+      if (supportsAbort) {
+        const _ac = new AbortController();
+        if (!option.signal) option.signal = _ac.signal;
+        _abortControllers[option.fetchId] = _ac;
+        option.signal.addEventListener('abort', () => {
+          // console.log(option.fetchId, 'aborttttttt');
+          const evt = new CustomEvent(QuickFetch.EVENT_FETCH_ABORT, {
+            detail: {
+              fetchId: option.fetchId,
+              signal: option.signal
+            }
+          });
+          // console.log(evt, 111, typeof _this.dispatchEvent, evt.detail);
+          _this.dispatchEvent(evt);
+        });
+      }
 
       _formatHeaders(option);
       _parseBody(option, method, params);
@@ -124,7 +164,7 @@ class QuickFetch extends MiddlewareHolder {
           return (request) => {
             const fetchPromise = fetch.apply(null, [request]);
             // eslint-disable-next-line no-unused-vars
-            const timeoutPromise = new Promise((resolve, reject) => {
+            const timeoutPromise = new Promise((_, reject) => {
               const err = new CustomError(QuickFetch.EXCEPTION_TIMEOUT, request)
               setTimeout(
                 () => { reject(err); },
@@ -149,7 +189,6 @@ class QuickFetch extends MiddlewareHolder {
           return _fetch(reqClone).then(
             res => this._parseResponseMiddlewares(res, option)
           ).catch((error) => {
-						console.log(error, 111)
             error.request = req.clone();
             return this._parseErrorMiddlewares(error, option);
           })
@@ -284,5 +323,10 @@ QuickFetch.ERROR = 'REQUESTER_TYPE_ERROR';
  * @static
  */
 QuickFetch.EXCEPTION_TIMEOUT = 'REQUESTER_ERROR_TIMEOUT';
+/**
+ * @memberof QuickFetch
+ * @static
+ */
+QuickFetch.EVENT_FETCH_ABORT = 'FetchAbort';
 
 export default QuickFetch;

@@ -1,6 +1,6 @@
 # QuickFetch
 
-> a fetch wrapper like axios, support middlewares
+> a fetch wrapper like axios, support middlewares & abort
 
 ## 1. How to install
 ```
@@ -37,6 +37,8 @@ QuickFetch
         * [.RESPONSE](#QuickFetch.RESPONSE)
         * [.ERROR](#QuickFetch.ERROR)
         * [.EXCEPTION_TIMEOUT](#QuickFetch.EXCEPTION_TIMEOUT)
+        * [.EVENT_FETCH_ABORT](#QuickFetch.EVENT_FETCH_ABORT)
+        * [.abort(id)](#QuickFetch.abort)
 
 <a name="new_QuickFetch_new"></a>
 
@@ -177,3 +179,18 @@ regist a middleware
 
 ### QuickFetch.EXCEPTION\_TIMEOUT
 **Kind**: static property of [<code>QuickFetch</code>](#QuickFetch)  
+<a name="QuickFetch.EVENT_FETCH_ABORT"></a>
+
+### QuickFetch.EVENT\_FETCH\_ABORT
+**Kind**: static property of [<code>QuickFetch</code>](#QuickFetch)  
+<a name="QuickFetch.abort"></a>
+
+### QuickFetch.abort(id)
+cancel a fetch action
+
+**Kind**: static method of [<code>QuickFetch</code>](#QuickFetch)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| id | <code>string</code> \| <code>number</code> \| <code>symbol</code> | fetchId |
+

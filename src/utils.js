@@ -14,10 +14,19 @@ export function _cloneObject(target) {
     : target;
 }
 
-export function _isValidUseId(fetchId) {
+
+let _fid = 0;
+export function _getDefaultFetchId() {
+  return Symbol.for(`default_fetchId_${_fid++}`);
+}
+
+export function _isValidFetchId(fetchId) {
   return typeof fetchId !== 'undefined' 
-    && ((typeof fetchId === 'string' && fetchId.length)
-      || typeof fetchId === 'number');
+    && (
+      typeof fetchId === 'number'
+      || (typeof fetchId === 'string' && fetchId.length)
+      || (typeof fetchId === 'symbol' && !/^default_fetchId_/.test(Symbol.keyFor(fetchId)))
+    );
 }
 
 export function _formatHeaders(option) {

@@ -1,12 +1,13 @@
 import findIndex from 'lodash-es/findIndex';
 import {
 	_cloneObject,
-	_isValidUseId
+	_isValidFetchId
 } from './utils';
 
-class MiddlewareHolder {
+class MiddlewareHolder extends EventTarget {
 	
 	constructor() {
+    super();
 		this._midIdFlag = 0;
 		this._mids = [];
 	}
@@ -21,7 +22,7 @@ class MiddlewareHolder {
     if (!mObjArr.length) return null;
     let mids = mObjArr;
     const { fetchId } = option;
-    if (_isValidUseId(fetchId)) {
+    if (_isValidFetchId(fetchId)) {
       mids = mids.filter(mw => (!mw.fetchId || mw.fetchId === fetchId));
       mids = mids.filter(mw => !mw.disabledUses[fetchId]);
       if (!mids.length) return null;
@@ -80,7 +81,7 @@ class MiddlewareHolder {
       disabledUses: {}
     };
 
-    if (_isValidUseId(fetchId)) {
+    if (_isValidFetchId(fetchId)) {
       mObj.fetchId = fetchId;
     }
 
@@ -89,7 +90,7 @@ class MiddlewareHolder {
     console.log(
       'regist middleware %s %s, new array length is %s',
       id,
-      _isValidUseId(fetchId) ? `(${fetchId})` : '',
+      _isValidFetchId(fetchId) ? `(${fetchId})` : '',
       this._mids.length
     );
 
@@ -128,14 +129,14 @@ class MiddlewareHolder {
     const mw = this._mids[idx];
     const dObj = mw.disabledUses;
 
-    if (_isValidUseId(fetchId) && !dObj[fetchId]) {
+    if (_isValidFetchId(fetchId) && !dObj[fetchId]) {
       dObj[fetchId] = true;
     } else {
       mw.allDisabled = true;
     }
 
     console.log(
-      `pause(disable) middleware ${id} ${_isValidUseId(fetchId) ? 'for ' + fetchId : ''}`,
+      `pause(disable) middleware ${id} ${_isValidFetchId(fetchId) ? 'for ' + fetchId : ''}`,
       dObj
     );
   }
@@ -154,14 +155,14 @@ class MiddlewareHolder {
     const mw = this._mids[idx];
     const dObj = mw.disabledUses;
 
-    if (_isValidUseId(fetchId) && dObj[fetchId]) {
+    if (_isValidFetchId(fetchId) && dObj[fetchId]) {
       delete dObj[fetchId];
     } else {
       mw.allDisabled = false;
     }
 
     console.log(
-      `resume(enable) middleware ${id} ${_isValidUseId(fetchId) ? 'for ' + fetchId : ''}`,
+      `resume(enable) middleware ${id} ${_isValidFetchId(fetchId) ? 'for ' + fetchId : ''}`,
       dObj
     );
   }

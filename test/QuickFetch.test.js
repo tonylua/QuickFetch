@@ -151,12 +151,35 @@ describe('test QuickFetch.js', () => {
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded'
       },
-      forceJSON: true
+      forceJSON: true // 强制使用 JSON
     });
     expect(fetch.mock.calls[5][0].url).toEqual('/some6');
     expect(fetch.mock.calls[5][0].body).toEqual(JSON.stringify(obj));
 
     done();
+  });
+  
+  it('应该可以中途取消请求', () => {
+    fetch.mockResponseOnce(
+      () => new Promise(resolve => setTimeout(() => resolve({ body: 'okkk' }), 100))
+    );
+  
+    qFetch = new QuickFetch();
+    qFetch.dispatchEvent = jest.fn(); // addEventListener 在测试环境无法正常工作
+    
+    const fid2 = 'get222';
+    const res2 = qFetch.get('/ajax-api/sample/delay', null, { fetchId: fid2 });
+    QuickFetch.abort(fid2);
+    
+    const evt = qFetch.dispatchEvent.mock.calls[0][0];
+    expect(evt).toBeInstanceOf(CustomEvent);
+    
+    const { type, detail: { fetchId, signal } } = evt;
+    expect(type).toEqual(QuickFetch.EVENT_FETCH_ABORT);
+    expect(fetchId).toEqual(fid2);
+    expect(signal.aborted).toBeTruthy();
+    
+    qFetch.dispatchEvent.mockClear();
   });
 
   it('超时应该报错', (done) => {
