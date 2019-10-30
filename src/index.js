@@ -18,6 +18,24 @@ const _abortControllers = {};
 const supportsAbort = typeof AbortController === 'function';
 
 /**
+ * an optional object for Request API
+ * @typedef {Object|Null} option
+ * @property {string} [method] standard fetch init option
+ * @property {string} [credentials = include] standard fetch init option
+ * @property {string} [mode = cors] standard fetch init option
+ * @property {string} [cache = reload] standard fetch init option
+ * @property {Object} [headers] standard fetch init option
+ * @property {string} [baseURL] - optional, an url prefix
+ * @property {string} [timeout     = 30000] - optional, timeout
+ * @property {boolean} [catchError = true] - optional, 
+ *  if true then just parse error in middleware, otherwise throw it to endpoint
+ * @property {Array} [ignoreBodyMethods = ['get', 'head']] optional 
+ * @property {boolean} [forceJSON = false] optional, send body with JSON.stringify()
+ * @property {string|number|symbol} [fetchId] optional, an unique ID of every fetch request
+ * @property {AbortSignal} [signal] optional, a given signal to cancel the fetch request
+ */
+
+/**
  * QuickFetch
  * @extends MiddlewareHolder
  */
@@ -43,11 +61,7 @@ class QuickFetch extends MiddlewareHolder {
 	* QuickFetch constructor
 	* @description a fetch-based HTTP request tool
 	* @class
-	* @param {Object|null} [option] - an optional object for Request API
-	* @param {string} [option.baseURL] - an optional url prefix
-	* @param {string} [option.timeout     = 30000] - an optional timeout
-	* @param {Boolean} [option.catchError = true] - optional, 
-	*  if true then just parse error in middleware, otherwise throw it to endpoint
+  * @param {option} [option]
 	*/
 	constructor(option) {
 		super(option);
@@ -119,6 +133,7 @@ class QuickFetch extends MiddlewareHolder {
             'Content-Type': 'application/json'
           },
           ignoreBodyMethods: ['get', 'head'],
+          forceJSON: false,
           timeout: 30000,
           baseURL: '',
           catchError: true,
@@ -210,11 +225,8 @@ class QuickFetch extends MiddlewareHolder {
    * make a GET fetch
    * @param {string} url
    * @param {Object|null} [params] - an optional params object
-   * @param {Object|null} [option] - an optional object for Request API
-   * @param {string} [option.baseURL] - an optional url prefix
-   * @param {string} [option.timeout=30000] - an optional timeout
-   * @param {Boolean} [option.catchError=true] - optional, 
-   *  if true then just parse error in middleware, otherwise throw it to endpoint
+   * @param {option} [option]
+   * @see {@link QuickFetch#constuctor}
    * @returns {Promise} a Promise that resolves to a Response object
    */
   get(...args) {
@@ -225,11 +237,7 @@ class QuickFetch extends MiddlewareHolder {
    * make a POST fetch
    * @param {string} url
    * @param {Object|null} [params] - an optional params object
-   * @param {Object|null} [option] - an optional object for Request API
-   * @param {string} [option.baseURL] - an optional url prefix
-   * @param {string} [option.timeout=30000] - an optional timeout
-   * @param {Boolean} [option.catchError=true] - optional, 
-   *  if true then just parse error in middleware, otherwise throw it to endpoint
+   * @param {option} [option]
    * @returns {Promise} a Promise that resolves to a Response object
    */
   post(...args) {
@@ -240,11 +248,7 @@ class QuickFetch extends MiddlewareHolder {
    * make a DELETE fetch
    * @param {string} url
    * @param {Object|null} [params] - an optional params object
-   * @param {Object|null} [option] - an optional object for Request API
-   * @param {string} [option.baseURL] - an optional url prefix
-   * @param {string} [option.timeout=30000] - an optional timeout
-   * @param {Boolean} [option.catchError=true] - optional, 
-   *  if true then just parse error in middleware, otherwise throw it to endpoint
+   * @param {option} [option]
    * @returns {Promise} a Promise that resolves to a Response object
    */
   delete(...args) {
@@ -255,11 +259,7 @@ class QuickFetch extends MiddlewareHolder {
    * make a PUT fetch
    * @param {string} url
    * @param {Object|null} [params] - an optional params object
-   * @param {Object|null} [option] - an optional object for Request API
-   * @param {string} [option.baseURL] - an optional url prefix
-   * @param {string} [option.timeout=30000] - an optional timeout
-   * @param {Boolean} [option.catchError=true] - optional, 
-   *  if true then just parse error in middleware, otherwise throw it to endpoint
+   * @param {option} [option]
    * @returns {Promise} a Promise that resolves to a Response object
    */
   put(...args) {
@@ -270,11 +270,7 @@ class QuickFetch extends MiddlewareHolder {
    * make a PATCH fetch
    * @param {string} url
    * @param {Object|null} [params] - an optional params object
-   * @param {Object|null} [option] - an optional object for Request API
-   * @param {string} [option.baseURL] - an optional url prefix
-   * @param {string} [option.timeout=30000] - an optional timeout
-   * @param {Boolean} [option.catchError=true] - optional, 
-   *  if true then just parse error in middleware, otherwise throw it to endpoint
+   * @param {option} [option]
    * @returns {Promise} a Promise that resolves to a Response object
    */
   patch(...args) {

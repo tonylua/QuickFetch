@@ -4,6 +4,10 @@ import {
 	_isValidFetchId
 } from './utils';
 
+/**
+ * MiddlewareHolder
+ * @extends EventTarget
+ */
 class MiddlewareHolder extends EventTarget {
 	
 	constructor() {
@@ -64,7 +68,7 @@ class MiddlewareHolder extends EventTarget {
   /**
    * regist a middleware
    * @param {string} type - QuickFetch.REQUEST | QuickFetch.RESPONSE | QuickFetch.ERROR
-   * @param {function} middleware - a function looks like '(req|res|err, next) => {}'
+   * @param {function} middleware - a function looks like ```(req|res|err, next) => {}```
    * @param {string|number} [fetchId] - a optional id for special requests
    * @returns {object} actions - { unuse, pause, resume }
    */
