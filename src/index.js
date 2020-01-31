@@ -25,7 +25,8 @@ const supportsAbort = typeof AbortController === 'function';
  * @property {string} [mode = cors] standard fetch init option
  * @property {string} [cache = reload] standard fetch init option
  * @property {Object} [headers] standard fetch init option
- * @property {string} [baseURL] - optional, an url prefix
+ * @property {string} [endpoint] - optional, e.g. http://xxx.com:8090
+ * @property {string} [baseURL] - optional, an url prefix, e.g. /myapi
  * @property {string} [timeout     = 30000] - optional, timeout
  * @property {boolean} [catchError = true] - optional, 
  *  if true then just parse error in middleware, otherwise throw it to endpoint

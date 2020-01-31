@@ -74,5 +74,9 @@ export function _getURL(option, url, params) {
   if (option.baseURL) {
     rUrl = `${option.baseURL}/${rUrl}`.replace(/\/+/g, '/');
   }
+  // endpoint
+  if (option.endpoint) {
+    rUrl = `${option.endpoint}${rUrl}`;
+  }
   return rUrl;
 }

@@ -90,6 +90,21 @@ describe('test QuickFetch.js', () => {
       }
     );
   });
+  
+  it('应该正确处理 endpoint', async () => {
+    qFetch = new QuickFetch({
+      endpoint: 'http://foo.com:7070',
+      baseURL: '/my-api'
+    });
+    qFetch.use(QuickFetch.REQUEST, (req, next) => {
+      expect(req.url).toEqual('http://foo.com:7070/my-api/sample/info3');
+      next(req);
+    });
+    await qFetch.get('/sample/info3');
+    expect(fetch.mock.calls.length).toBe(1);
+    expect(fetch.mock.calls[0][0] instanceof Request).toBeTruthy();
+    expect(fetch.mock.calls[0][0].url).toEqual('http://foo.com:7070/my-api/sample/info3');
+  });
 
   it('应该正确处理参数', async (done) => {
     fetch.mockResponse(
