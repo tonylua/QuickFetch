@@ -1,6 +1,6 @@
 {
   "name": "quickfetch",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "a fetch-based HTTP request tool like axios",
   "main": "dist/QuickFetch.min.js",
   "scripts": {
