@@ -13,5 +13,19 @@ see `test/QuickFetch.test.js`
 
 OR [vue-cli-3-preset](https://github.com/tonylua/vue-cli-3-preset/tree/master/template/src/utils/fetchWrapper)
 
+### to eliminate the "the request of a dependency is an expression" warning
+
+[about the issue](https://github.com/parcel-bundler/parcel/issues/2883)
+
+add below to your webpack config:
+
+```js
+// quickfetch uses parcel-bundler which has require statements
+new webpack.ContextReplacementPlugin(/quickfetch/, data => {
+  delete data.dependencies[0].critical;
+  return data;
+})
+```
+
 ## 3. API
 {{>main}}

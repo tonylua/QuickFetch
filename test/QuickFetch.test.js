@@ -473,7 +473,7 @@ describe('test QuickFetch.js', () => {
     qFetch.put('/ajax-api/sample/some', null);
   });
   
-  it('中间件：在 response 中获知请求的 headers', (done) => {
+  it.only('中间件：在 response 中获知请求的 headers', (done) => {
     fetch.mockResponse(
       JSON.stringify({
         msg: 'ok!'
@@ -483,6 +483,9 @@ describe('test QuickFetch.js', () => {
     qFetch = new QuickFetch();
     qFetch.use(QuickFetch.RESPONSE, (res, next) => {
       expect(res.requestHeaders).toBeTruthy();
+      if (res.method === 'GET') {
+        expect(res.requestHeaders.get('Content-Type')).toEqual('application/vnd.ms-excel');
+      }
       if (res.method === 'PUT') {
         expect(res.requestHeaders.get('X-Header-Param-1')).toEqual('hello');
       }
@@ -494,6 +497,11 @@ describe('test QuickFetch.js', () => {
       done();
     });
     
+    qFetch.get('/ajax-api/sample/xxx', null, {
+      headers: {
+        'Content-Type': 'application/vnd.ms-excel'
+      }
+    });
     qFetch.put('/ajax-api/sample/foo', null, {
       headers: {
         'X-Header-Param-1': 'hello'
