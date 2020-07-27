@@ -1,21 +1,18 @@
 module.exports = {
-  moduleFileExtensions: [
-    'js'
-  ],
-  transform: {
-    '^.+\\.js$': 'babel-jest'
+  globals: {
+    "ts-jest": {
+      babelConfig: true,
+    },
   },
-  transformIgnorePatterns: [
-    "<rootDir>/node_modules/(?!lodash-es)"
-  ],
+  modulePaths: ["<rootDir>/src"],
+  moduleFileExtensions: ["js", "json", "jsx", "vue", "ts", "tsx"],
+  transform: {
+    "^.+\\.jsx?$": "babel-jest",
+    "^.+\\.tsx?$": "ts-jest",
+  },
+  transformIgnorePatterns: ["<rootDir>/node_modules/(?!lodash-es)"],
   collectCoverage: true,
-  collectCoverageFrom: [
-    "<rootDir>/src/**/*.js",
-    "!**/node_modules/**"
-  ],
-  coveragePathIgnorePatterns: [
-  ],
-  coverageReporters: [
-    "text"
-  ]
+  collectCoverageFrom: ["<rootDir>/src/**/*.js", "!**/node_modules/**"],
+  coveragePathIgnorePatterns: [],
+  coverageReporters: ["text"],
 };

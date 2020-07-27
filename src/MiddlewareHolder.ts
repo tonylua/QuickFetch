@@ -1,68 +1,82 @@
-import findIndex from 'lodash-es/findIndex';
+import findIndex from "lodash-es/findIndex";
+import { _cloneObject, _isValidFetchId } from "./utils";
 import {
-	_cloneObject,
-	_isValidFetchId
-} from './utils';
+  QFMidWrapper,
+  QFMidFn,
+  QFMidTypes,
+  QFOption,
+  QFCloneable,
+  QFFetchID,
+  QFUseReturnType,
+} from "./quickfetch";
 
 /**
  * MiddlewareHolder
  * @extends EventTarget
  */
 class MiddlewareHolder extends EventTarget {
-	
-	constructor() {
-    super();
-		this._midIdFlag = 0;
-		this._mids = [];
-	}
+  private _midIdFlag: number;
+  private _mids: Array<QFMidWrapper>;
 
-  /**
-   * @private
-   * @param {String} type - QuickFetch.REQUEST | QuickFetch.RESPONSE | QuickFetch.ERROR
-   * @param {Object} [option]
-   */
-  _getMiddlewares(type, option) {
-    const mObjArr = this._mids.filter(m => m.type === type);
-    if (!mObjArr.length) return null;
-    let mids = mObjArr;
-    const { fetchId } = option;
-    if (_isValidFetchId(fetchId)) {
-      mids = mids.filter(mw => (!mw.fetchId || mw.fetchId === fetchId));
-      mids = mids.filter(mw => !mw.disabledUses[fetchId]);
-      if (!mids.length) return null;
-    } else {
-      mids = mObjArr.filter(mw => !mw.fetchId);
-      mids = mids.filter(mw => !mw.allDisabled);
-    }
-    mids = mids.map(mw => mw.middleware);
-    return mids;
+  constructor() {
+    super();
+    this._midIdFlag = 0;
+    this._mids = [];
   }
 
   /**
-   * @private
-   * @param {Array} mids 
+   * @protected
+   * @param {String} type - QuickFetch.REQUEST | QuickFetch.RESPONSE | QuickFetch.ERROR
+   * @param {Object} [option]
+   */
+  protected _getMiddlewares(
+    type: QFMidTypes,
+    option: QFOption
+  ): Array<QFMidFn> {
+    const mObjArr = this._mids.filter((m) => m.type === type);
+    if (!mObjArr.length) return [];
+    let mids = mObjArr;
+    const fetchId = option?.fetchId;
+    if (_isValidFetchId(fetchId)) {
+      mids = mids.filter((mw) => !mw.fetchId || mw.fetchId === fetchId);
+      mids = mids.filter((mw) => !mw.disabledUses[fetchId!]);
+      if (!mids.length) return [];
+    } else {
+      mids = mObjArr.filter((mw) => !mw.fetchId);
+      mids = mids.filter((mw) => !mw.allDisabled);
+    }
+    return mids.map((mw) => mw.middleware);
+  }
+
+  /**
+   * @protected
+   * @param {Array} mids
    * @param {Request|Response|JSON|Blob} target
    * @param {Object} [params = null]
    */
-  _parseMiddlewares(mids, target, params = null) {
+  protected _parseMiddlewares(
+    mids: Array<QFMidFn>,
+    target: QFCloneable,
+    params: any = null
+  ) {
     if (!mids) {
       return Promise.resolve(_cloneObject(target));
     }
     // eslint-disable-next-line no-unused-vars
-    return new Promise(((resolve, reject) => {
-      const next = (obj) => {
+    return new Promise((resolve) => {
+      const next = (obj: QFCloneable) => {
         const rtn = _cloneObject(obj);
         if (params) {
-          Object.keys(params).forEach(k => rtn[k] = params[k]);
+          Object.keys(params).forEach((k) => ((rtn as any)[k] = params[k]));
         }
         if (!mids.length) {
           return resolve(rtn);
         }
         const mw = mids.shift();
-        mw(rtn, next);
+        mw?.(rtn, next);
       };
       next(_cloneObject(target));
-    }));
+    });
   }
 
   /**
@@ -72,17 +86,21 @@ class MiddlewareHolder extends EventTarget {
    * @param {string|number} [fetchId] - a optional id for special requests
    * @returns {object} actions - { unuse, pause, resume }
    */
-  use(type, middleware, fetchId) {
-    if (!type || typeof type !== 'string') return;
-    if (!middleware || typeof middleware !== 'function') return;
+  use(
+    type: QFMidTypes,
+    middleware: QFMidFn,
+    fetchId: QFFetchID
+  ): QFUseReturnType {
+    if (!type || typeof type !== "string") return;
+    if (!middleware || typeof middleware !== "function") return;
 
     const id = this._midIdFlag++;
 
-    const mObj = {
+    const mObj: QFMidWrapper = {
       id,
       type,
       middleware,
-      disabledUses: {}
+      disabledUses: {},
     };
 
     if (_isValidFetchId(fetchId)) {
@@ -92,41 +110,43 @@ class MiddlewareHolder extends EventTarget {
     this._mids.push(mObj);
 
     console.log(
-      'regist middleware %s %s, new array length is %s',
+      "regist middleware %s %s, new array length is %s",
       id,
-      _isValidFetchId(fetchId) ? `(${fetchId})` : '',
+      _isValidFetchId(fetchId) ? `(${fetchId.toString()})` : "",
       this._mids.length
     );
 
     return {
       unuse: () => this._unuse(id),
-      pause: muId => this._pause(id, muId),
-      resume: muId => this._resume(id, muId)
+      pause: (muId) => this._pause(id, muId),
+      resume: (muId) => this._resume(id, muId),
     };
   }
 
   /**
-   * @private
+   * @protected
    * unregist a middleware
    * @param {number} id
    */
-  _unuse(id) {
-    if (typeof id === 'undefined') return;
+  protected _unuse(id: number): void {
+    if (typeof id === "undefined") return;
     const idx = findIndex(this._mids, { id });
     if (idx < 0) return;
     this._mids.splice(idx, 1);
 
-    console.log(`unregist middleware ${id}, new array length is ${this._mids.length}`);
+    console.log(
+      `unregist middleware ${id}, new array length is ${this._mids.length}`
+    );
   }
 
   /**
-   * @private
+   * @protected
    * pause a middleware
    * @param {number} id
    * @param {string|number} [fetchId] - a optional id for special requests
    */
-  _pause(id, fetchId) {
-    if (typeof id === 'undefined') return;
+  protected _pause(id: number, fetchId: QFFetchID): void {
+    if (typeof id === "undefined") return;
     const idx = findIndex(this._mids, { id });
     if (idx < 0) return;
 
@@ -140,22 +160,24 @@ class MiddlewareHolder extends EventTarget {
     }
 
     console.log(
-      `pause(disable) middleware ${id} ${_isValidFetchId(fetchId) ? 'for ' + fetchId : ''}`,
+      `pause(disable) middleware ${id} ${
+        _isValidFetchId(fetchId) ? "for " + fetchId.toString() : ""
+      }`,
       dObj
     );
   }
 
   /**
-   * @private
+   * @protected
    * resume a paused middleware
    * @param {number} id
    * @param {string|number} [fetchId] - a optional id for special requests
    */
-  _resume(id, fetchId) {
-    if (typeof id === 'undefined') return;
+  protected _resume(id: number, fetchId: QFFetchID): void {
+    if (typeof id === "undefined") return;
     const idx = findIndex(this._mids, { id });
     if (idx < 0) return;
-    
+
     const mw = this._mids[idx];
     const dObj = mw.disabledUses;
 
@@ -166,7 +188,9 @@ class MiddlewareHolder extends EventTarget {
     }
 
     console.log(
-      `resume(enable) middleware ${id} ${_isValidFetchId(fetchId) ? 'for ' + fetchId : ''}`,
+      `resume(enable) middleware ${id} ${
+        _isValidFetchId(fetchId) ? "for " + fetchId.toString() : ""
+      }`,
       dObj
     );
   }
