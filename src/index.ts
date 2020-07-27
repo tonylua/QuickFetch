@@ -42,7 +42,7 @@ const supportsAbort = typeof AbortController === "function";
  * QuickFetch
  * @extends MiddlewareHolder
  */
-class QuickFetch extends MiddlewareHolder {
+export default class QuickFetch extends MiddlewareHolder {
   /**
    * @memberof QuickFetch
    * @static
@@ -355,6 +355,3 @@ class QuickFetch extends MiddlewareHolder {
   }
 }
 
-export default QuickFetch;
-
-export const four: number = 2 + 2;

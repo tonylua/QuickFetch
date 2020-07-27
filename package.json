@@ -2,16 +2,11 @@
   "name": "quickfetch",
   "version": "1.0.0-alpha.1",
   "description": "a fetch-based HTTP request tool like axios",
-  "source": "src/index.ts",
-  "module": "dist/QuickFetch.min.js",
+  "types": "dist/QuickFetch.d.ts",
   "scripts": {
     "test": "jest",
     "doc": "jsdoc2md src/index.ts src/MiddlewareHolder.ts --template README.hbs > README.md",
-    "build": "parcel build src/index.ts --no-source-maps --no-cache"
-  },
-  "isLibrary": true,
-  "engines": {
-    "node": "10"
+    "build": "rm -rf dist && microbundle -i src/index.ts -o dist/QuickFetch.min.js --no-pkg-main -f umd"
   },
   "pre-commit": [
     "test"
@@ -37,8 +32,6 @@
     "@babel/plugin-proposal-pipeline-operator": "^7.10.5",
     "@babel/preset-env": "^7.10.4",
     "@babel/preset-typescript": "^7.10.4",
-    "@parcel/transformer-typescript-tsc": "^2.0.0-alpha.3",
-    "@parcel/validator-typescript": "^2.0.0-alpha.3",
     "@types/jest": "^26.0.7",
     "@types/lodash-es": "^4.17.3",
     "@types/qs": "^6.9.4",
@@ -48,7 +41,7 @@
     "jest": "^26.1.0",
     "jest-fetch-mock": "^3.0.3",
     "jsdoc-to-markdown": "^6.0.1",
-    "parcel": "^2.0.0-beta.1",
+    "microbundle": "^0.12.3",
     "pre-commit": "^1.2.2",
     "ts-jest": "^26.1.3",
     "tslib": "^2.0.0",
