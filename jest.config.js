@@ -12,7 +12,7 @@ module.exports = {
   },
   transformIgnorePatterns: ["<rootDir>/node_modules/(?!lodash-es)"],
   collectCoverage: true,
-  collectCoverageFrom: ["<rootDir>/src/**/*.js", "!**/node_modules/**"],
+  collectCoverageFrom: ["<rootDir>/src/**/*", "!**/node_modules/**"],
   coveragePathIgnorePatterns: [],
   coverageReporters: ["text"],
 };
