@@ -5,7 +5,7 @@
   "main": "dist/QuickFetch.js",
   "scripts": {
     "test": "jest",
-    "doc": "jsdoc2md src/index.ts src/MiddlewareHolder.ts --template README.hbs > README.md",
+    "doc": "jsdoc2md src/index.ts src/MiddlewareHolder.ts -c jsdoc2md.json --template README.hbs > README.md",
     "build": "shell-exec --colored-output \"rm -rf dist\" \"microbundle -i src/index.ts -o dist/QuickFetch.js --no-pkg-main -f umd\"",
     "mergets": "node merge-ts.js"
   },
@@ -41,7 +41,8 @@
     "file-saver": "^2.0.2",
     "jest": "^26.1.0",
     "jest-fetch-mock": "^3.0.3",
-    "jsdoc-to-markdown": "^6.0.1",
+    "jsdoc-babel": "^0.5.0",
+    "jsdoc-to-markdown": "^6.0.0",
     "klaw-sync": "^6.0.0",
     "microbundle": "^0.12.3",
     "pre-commit": "^1.2.2",
