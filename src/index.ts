@@ -353,5 +353,19 @@ export default class QuickFetch extends MiddlewareHolder {
       )
       .then(() => responseArr);
   }
-}
 
+  /**
+   * send a beacon
+   * @param {string} url
+   * @param {Object|null} [params] - an optional params object
+   * @returns {boolean|Promise} send result
+   */
+  ping(url: string, params: any): boolean | Promise<any> {
+    if ("sendBeacon" in navigator) {
+      return navigator.sendBeacon(url, params || new FormData());
+    }
+    return (this.post as Function)(url, params, {
+      keepalive: true,
+    });
+  }
+}

@@ -38,6 +38,7 @@ declare type QFOption = null | {
   forceJSON?: boolean;
   fetchId?: QFFetchID;
   signal?: AbortSignal;
+  keepalive?: boolean;
 };
 
 declare type QFCloneable = Request | Response | Blob | JSON | Error | QFOption;

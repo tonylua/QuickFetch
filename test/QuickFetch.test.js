@@ -188,6 +188,40 @@ describe("test QuickFetch.js", () => {
     done();
   });
 
+  it("应该正确清理 headers", async (done) => {
+    qFetch = new QuickFetch({
+      headers: {
+        aa: void 0,
+        bb: null,
+        cc: "",
+        dd: 123,
+      },
+    });
+    qFetch.use(QuickFetch.REQUEST, (req, next) => {
+      expect(req.init.headers.aa).toBeUndefined();
+      expect(req.init.headers.bb).toBeUndefined();
+      expect(req.init.headers.cc).toBeUndefined();
+      expect(req.init.headers.dd).toEqual("123");
+      next(req);
+      done();
+    });
+    await qFetch.post("/some6", null);
+  });
+
+  it("应该正确合并数组参数", async (done) => {
+    qFetch = new QuickFetch({
+      arr1: [1, 2],
+    });
+    qFetch.use(QuickFetch.REQUEST, (req, next) => {
+      expect(req.init.arr1).toEqual([3, 4]);
+      next(req);
+      done();
+    });
+    await qFetch.post("/some6", null, {
+      arr1: [3, 4],
+    });
+  });
+
   it("应该可以中途取消请求", (done) => {
     fetch.mockResponseOnce(
       () =>
@@ -231,7 +265,11 @@ describe("test QuickFetch.js", () => {
     );
 
     qFetch = new QuickFetch({
-      timeout: 5,
+      timeout: "5",
+    });
+    qFetch.use(QuickFetch.REQUEST, (req, next) => {
+      expect(req.init.timeout).toStrictEqual(5);
+      next(req);
     });
     qFetch.get("/ajax-api/sample/delay").catch((err) => {
       expect(err.message).toBe(QuickFetch.EXCEPTION_TIMEOUT);
@@ -774,5 +812,41 @@ describe("test QuickFetch.js", () => {
         done();
       });
   });
-});
 
+  it("发送统计信息", async (done) => {
+    fetch.mockResponses(
+      [],
+      [
+        JSON.stringify({
+          msg: "ok ping",
+        }),
+        { status: 200 },
+      ]
+    );
+
+    qFetch = new QuickFetch();
+
+    const ng = navigator || {};
+    ng.sendBeacon = jest.fn();
+    qFetch.ping("/ajax-api/sample/ping", { a: 1 });
+    expect(ng.sendBeacon).toHaveBeenCalled();
+    delete ng.sendBeacon;
+
+    if (navigator) {
+      delete navigator.sendBeacon;
+    }
+    qFetch.use(QuickFetch.REQUEST, (req, next) => {
+      expect(req.init.keepalive).toBe(true);
+      next(req);
+    });
+    qFetch.use(QuickFetch.RESPONSE, (res, next) => {
+      expect(res.method).toEqual("POST");
+      next(res);
+
+      done();
+    });
+    const res2 = await qFetch.ping("/ajax-api/sample/ping", { a: 1 });
+    const json2 = await res2.json();
+    expect(json2.msg).toEqual("ok ping");
+  });
+});

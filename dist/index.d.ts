@@ -134,4 +134,11 @@ export default class QuickFetch extends MiddlewareHolder {
      * @returns {Response[]}
      */
     sequence(requestPromiseArr: Array<Promise<any>>): Promise<Promise<any>[]>;
+    /**
+     * send a beacon
+     * @param {string} url
+     * @param {Object|null} [params] - an optional params object
+     * @returns {boolean|Promise} send result
+     */
+    postBeacon(url: string, params: any): boolean | Promise<any>;
 }
