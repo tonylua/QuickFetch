@@ -140,5 +140,5 @@ export default class QuickFetch extends MiddlewareHolder {
      * @param {Object|null} [params] - an optional params object
      * @returns {boolean|Promise} send result
      */
-    postBeacon(url: string, params: any): boolean | Promise<any>;
+    ping(url: string, params: any): boolean | Promise<any>;
 }
